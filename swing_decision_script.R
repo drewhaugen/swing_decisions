@@ -108,7 +108,7 @@ obj_func <- function(max_depth, min_child_weight, subsample, colsample_bytree) {
     objective = "multi:softprob",
     eval_metric = "merror")
   
-  xgbcv <- xgb.cv(params = param,
+  xgbcv <- xgb.cv(params = params,
                            data = x_data,
                            label = y_data,
                            nround = 150,
