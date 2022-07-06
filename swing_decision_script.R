@@ -17,8 +17,9 @@ swing_data <- data%>%
   filter(description != "ball" & description != "called_strike" & description != "blocked_ball" & description != "pitchout" & description != "hit_by_pitch")%>% 
   mutate(outcome = ifelse(description == "swinging_strike" | description == "swinging_strike_blocked" | description == "foul_tip" | (strikes == 2 & description == "foul_bunt") | description == "bunt_foul_tip" | description == "missed_bunt", 1,
                           ifelse(description == "foul" | description == "foul_bunt", 2,  
-                                 ifelse(events == "single", 3, ifelse(events == "double", 4, 
-                                                                      ifelse(events == "triple", 5, ifelse(events == "home_run", 6, 7)))))))%>% 
+                                 ifelse(events == "single", 3, 
+                                        ifelse(events == "double", 4, 
+                                               ifelse(events == "triple", 5, ifelse(events == "home_run", 6, 7)))))))%>% 
   mutate(stand = as.factor(stand))%>% 
   filter(!is.na(outcome), 
          !is.na(plate_x), 
@@ -95,26 +96,19 @@ folds <- list(fold1 = as.integer(seq(1, nrow(x_data), by = 3)),
 
 obj_func <- function(max_depth, min_child_weight, subsample, colsample_bytree) {
   
-  param <- list(
-    
-    # Hyper parameters 
+  params <- list(
     eta = 0.1,
-    num_class = 8,
+    num_class = 7,
     max_depth = max_depth,
     min_child_weight = min_child_weight,
     subsample = subsample,
     colsample_bytree = colsample_bytree,
-    
-    # Tree model 
+
     booster = "gbtree",
-    
-    # Classification problem 
     objective = "multi:softprob",
-    
-    
     eval_metric = "merror")
   
-  xgbcv <- xgboost::xgb.cv(params = param,
+  xgbcv <- xgb.cv(params = param,
                            data = x_data,
                            label = y_data,
                            nround = 150,
@@ -124,17 +118,12 @@ obj_func <- function(max_depth, min_child_weight, subsample, colsample_bytree) {
                            verbose = 1,
                            maximize = F)
   
-  lst <- list(
-    
-    # First argument must be named as "Score"
-    # Function finds maxima so inverting the output
-    Score = -min(xgbcv$evaluation_log$test_merror_mean),
-    
-    # Get number of trees for the best performing model
+  list <- list(
+    score = -min(xgbcv$evaluation_log$test_merror_mean),
     nrounds = xgbcv$best_iteration
   )
   
-  return(lst)
+  return(list)
 }
 
 bounds <- list(max_depth = c(1L, 10L),
@@ -176,7 +165,7 @@ takes <- data%>%
 takes_l <- takes%>% 
   filter(stand == "L") 
 
-takes_r<- takes%>% 
+takes_r <- takes%>% 
   filter(stand == "R") 
 
 cs_gam_l <- gam(strike ~ s(plate_x, plate_z), data = takes_l, family = binomial()) 
