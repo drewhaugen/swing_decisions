@@ -67,10 +67,10 @@ swing_data_f <-  swing_data%>%
 
 rm(dummy, dummy_data, factor, swing_data)
 
-set.seed(11)
-swing_sample = sample.split(swing_data_f$outcome, SplitRatio = .75) 
-swing_train = subset(swing_data_f, swing_sample == TRUE) 
-swing_test = subset(swing_data_f, swing_sample == FALSE) 
+set.seed(1)
+swing_sample <- sample.split(swing_data_f$outcome, SplitRatio = .75) 
+swing_train <- subset(swing_data_f, swing_sample == TRUE) 
+swing_test <- subset(swing_data_f, swing_sample == FALSE) 
 
 x_data <- swing_train %>%
   select(-outcome) %>%
